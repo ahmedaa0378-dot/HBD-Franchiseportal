@@ -48,6 +48,8 @@ const AbandonedCartsPage = () => {
     setLoading(false);
   };
 
+  const sendReminder = async (cart: CartSnapshot) => {
+    setSendingReminder(true);
 const sendReminder = async (cart: CartSnapshot) => {
     setSendingReminder(true);
 
@@ -78,7 +80,6 @@ const sendReminder = async (cart: CartSnapshot) => {
       setSendingReminder(false);
     }
   };
-
     try {
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
       
