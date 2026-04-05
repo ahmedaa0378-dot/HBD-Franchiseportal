@@ -102,6 +102,7 @@ function App() {
         <Route path="/admin/franchises" element={<FranchisesPage />} />
         <Route path="/admin/products" element={<ProductsPage />} />
         <Route path="/admin/orders" element={<AdminOrdersPage />} />
+        import DeliverySettingsPage from './pages/admin/DeliverySettingsPage';
         <Route path="/admin/inventory" element={<InventoryPage />} />
 
         {/* ============ DEFAULT REDIRECTS ============ */}
