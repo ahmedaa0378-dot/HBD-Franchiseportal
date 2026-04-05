@@ -35,6 +35,11 @@ const Header = () => {
               >
                 My Orders
               </Link>
+              {/* Notification Bell - ADD THIS */}
+              <NotificationBell 
+                recipientType="franchise" 
+                recipientId={franchise.id} 
+              />
               <Link 
                 to="/cart"
                 className={`relative text-sm hover:text-brand-gold transition flex items-center gap-2 ${isActive('/cart') ? 'text-brand-gold' : ''}`}
