@@ -393,7 +393,44 @@ const OrdersPage = () => {
     </div>
   </div>
 </div>
+{/* Payment Verification (for prepaid orders) */}
+{selectedOrder.payment_type === 'prepaid' && !selectedOrder.payment_verified && (
+  <div className="p-6 border-t bg-green-50">
+    <button
+      onClick={async () => {
+        setUpdating(true);
+        const { error } = await supabase
+          .from('orders')
+          .update({
+            payment_verified: true,
+            payment_verified_at: new Date().toISOString()
+          })
+          .eq('id', selectedOrder.id);
 
+        if (!error) {
+          setOrders(prev =>
+            prev.map(o => o.id === selectedOrder.id 
+              ? { ...o, payment_verified: true, payment_verified_at: new Date().toISOString() } 
+              : o)
+          );
+          setSelectedOrder({
+            ...selectedOrder,
+            payment_verified: true,
+            payment_verified_at: new Date().toISOString()
+          });
+          alert('✅ Payment verified successfully');
+        } else {
+          alert('❌ Failed to verify payment');
+        }
+        setUpdating(false);
+      }}
+      disabled={updating}
+      className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
+    >
+      {updating ? 'Processing...' : '✓ Verify Payment'}
+    </button>
+  </div>
+)}
             {/* Actions */}
             {selectedOrder.status !== 'delivered' && selectedOrder.status !== 'cancelled' && (
               <div className="p-6 border-t bg-gray-50 flex gap-3">
