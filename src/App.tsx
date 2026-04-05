@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useApp } from './context/AppContext';
 import DeliverySettingsPage from './pages/admin/DeliverySettingsPage';
 import PaymentSettingsPage from './pages/admin/PaymentSettingsPage';
+import BundlesPage from './pages/admin/BundlesPage';
+
 
 // Franchise Pages
 import LoginPage from './pages/LoginPage';
