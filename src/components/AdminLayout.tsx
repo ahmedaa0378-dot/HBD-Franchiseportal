@@ -11,7 +11,16 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [adminUserId, setAdminUserId] = useState<string>('');
 
+  useEffect(() => {
+    // Get current admin user ID
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setAdminUserId(user.id);
+    };
+    getUser();
+  }, []);
   const isActive = (path: string) => location.pathname === path;
 
   const handleSignOut = async () => {
@@ -44,6 +53,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <h1 className="font-display text-lg font-semibold text-brand-gold">½B Admin</h1>
               <p className="text-xs text-gray-400">Management Portal</p>
             </div>
+                        {/* ADD NOTIFICATION BELL HERE */}
+            {adminUserId && (
+              <NotificationBell 
+                recipientType="admin" 
+                recipientId={adminUserId} 
+              />
+            )}
           </div>
         </div>
 
