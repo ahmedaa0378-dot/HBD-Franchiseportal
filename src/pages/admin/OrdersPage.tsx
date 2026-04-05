@@ -53,17 +53,16 @@ const OrdersPage = () => {
     setLoading(false);
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdating(true);
 
     const updateData: any = { status: newStatus };
     
-    // Add timestamp based on status
     if (newStatus === 'confirmed') updateData.confirmed_at = new Date().toISOString();
     if (newStatus === 'shipped') updateData.shipped_at = new Date().toISOString();
     if (newStatus === 'delivered') {
       updateData.delivered_at = new Date().toISOString();
-      updateData.payment_status = 'paid'; // COD paid on delivery
+      updateData.payment_status = 'paid';
     }
     if (newStatus === 'cancelled') updateData.cancelled_at = new Date().toISOString();
 
@@ -73,6 +72,26 @@ const OrdersPage = () => {
       .eq('id', orderId);
 
     if (!error) {
+      const order = orders.find(o => o.id === orderId);
+      
+      // ADD THIS - Notify franchise of status change
+      if (order) {
+        await supabase.rpc('create_notification', {
+          p_recipient_type: 'franchise',
+          p_recipient_id: order.franchises?.id,
+          p_notification_type: 'order_status',
+          p_title: `Order ${order.order_number} ${newStatus}`,
+          p_message: `Your order has been ${newStatus}. ${
+            newStatus === 'shipped' ? 'Your items are on the way!' :
+            newStatus === 'delivered' ? 'Your order has been delivered.' :
+            newStatus === 'confirmed' ? 'We are preparing your order.' :
+            ''
+          }`,
+          p_link: '/orders',
+          p_metadata: { order_id: orderId, order_number: order.order_number }
+        });
+      }
+      
       setOrders(prev =>
         prev.map(o => o.id === orderId ? { ...o, ...updateData } : o)
       );
