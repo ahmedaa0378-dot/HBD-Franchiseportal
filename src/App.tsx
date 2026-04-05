@@ -103,6 +103,7 @@ function App() {
         <Route path="/admin/products" element={<ProductsPage />} />
         <Route path="/admin/orders" element={<AdminOrdersPage />} />
         <Route path="/admin/inventory" element={<InventoryPage />} />
+        <Route path="/admin/delivery-settings" element={<DeliverySettingsPage />} />
 
         {/* ============ DEFAULT REDIRECTS ============ */}
         <Route path="/" element={<Navigate to="/catalog" replace />} />
