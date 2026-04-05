@@ -35,7 +35,60 @@ const CartPage = () => {
     is_free_delivery_enabled: false
   });
 
-  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
+const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
+
+  // ADD THIS FUNCTION
+  const saveCartSnapshot = async () => {
+    if (!franchise?.id || cart.length === 0) return;
+
+    try {
+      // Check if there's an existing unconverted snapshot
+      const { data: existingSnapshot } = await supabase
+        .from('cart_snapshots')
+        .select('id')
+        .eq('franchise_id', franchise.id)
+        .eq('converted_to_order', false)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      const cartData = {
+        items: cart.map(item => ({
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price
+        })),
+        subtotal: subtotal,
+        gst_amount: gstCalculation.total,
+        delivery_charges: deliveryCharges,
+        grand_total: grandTotal
+      };
+
+      if (existingSnapshot) {
+        // Update existing snapshot
+        await supabase
+          .from('cart_snapshots')
+          .update({
+            cart_data: cartData,
+            cart_total: grandTotal,
+            created_at: new Date().toISOString() // Reset timestamp
+          })
+          .eq('id', existingSnapshot.id);
+      } else {
+        // Create new snapshot
+        await supabase
+          .from('cart_snapshots')
+          .insert({
+            franchise_id: franchise.id,
+            cart_data: cartData,
+            cart_total: grandTotal
+          });
+      }
+    } catch (error) {
+      console.error('Failed to save cart snapshot:', error);
+    }
+  };
 
   useEffect(() => {
     fetchSettings();
