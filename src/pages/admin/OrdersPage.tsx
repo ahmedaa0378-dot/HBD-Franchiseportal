@@ -178,6 +178,20 @@ const OrdersPage = () => {
                           day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
                         })}
                       </p>
+                      </p>
+                  {/* Payment Type Badge - ADD THIS SECTION */}
+                  <div className="mt-1">
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                      order.payment_type === 'prepaid' 
+                        ? (order.payment_verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800')
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {order.payment_type === 'prepaid' 
+                        ? (order.payment_verified ? '✓ Prepaid' : '⏳ Prepaid')
+                        : 'COD'}
+                    </span>
+                  </div>
+                </td>
                     </td>
                     <td className="py-4 px-6">
                       <p className="text-gray-900">{order.franchises?.franchise_name}</p>
