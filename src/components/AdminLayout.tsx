@@ -1,6 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Logo from './Logo';
+import NotificationBell from './NotificationBell';
+
 
 interface AdminLayoutProps {
   children: React.ReactNode;
