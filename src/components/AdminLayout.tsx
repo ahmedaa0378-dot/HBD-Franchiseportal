@@ -21,6 +21,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/admin/franchises', label: 'Franchises', icon: '🏪' },
     { path: '/admin/products', label: 'Products', icon: '📦' },
+    { path: '/admin/bundles', label: 'Bundles', icon: '🎁' }, // ADD THIS
     { path: '/admin/orders', label: 'Orders', icon: '🛒' },
     { path: '/admin/inventory', label: 'Inventory', icon: '📋' },
     { path: '/admin/delivery-settings', label: 'Delivery', icon: '🚚' }, // ADD THIS
