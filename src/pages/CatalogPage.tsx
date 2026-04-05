@@ -44,6 +44,7 @@ const CatalogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [bundles, setBundles] = useState<Bundle[]>([]);
 
   useEffect(() => {
     fetchData();
