@@ -282,7 +282,16 @@ if (itemsError) throw itemsError;
         })
         .eq('franchise_id', franchise?.id)
         .eq('converted_to_order', false);
-
+      // ADD THIS - Notify all admins of new order
+      await supabase.rpc('create_notification', {
+        p_recipient_type: 'admin',
+        p_recipient_id: null, // null = all admins
+        p_notification_type: 'new_order',
+        p_title: `🛒 New Order: ${order.order_number}`,
+        p_message: `${franchise?.franchise_name} placed an order worth ₹${grandTotal.toFixed(2)}`,
+        p_link: `/admin/orders`,
+        p_metadata: { order_id: order.id, order_number: order.order_number }
+      });
       clearCart();
       setSuccess(true);
     } catch (err: any) {
