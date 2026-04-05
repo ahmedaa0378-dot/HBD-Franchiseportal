@@ -239,57 +239,160 @@ const OrdersPage = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Status */}
-              <div className="flex items-center justify-between">
-                <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${statusColors[selectedOrder.status]}`}>
-                  {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
-                </span>
-                <span className="text-sm text-gray-500">
-                  Payment: {selectedOrder.payment_status?.toUpperCase()}
-                </span>
-              </div>
+  {/* Status & Payment */}
+  <div className="grid grid-cols-2 gap-4">
+    <div>
+      <p className="text-xs text-gray-500 mb-1">Order Status</p>
+      <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${statusColors[selectedOrder.status]}`}>
+        {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+      </span>
+    </div>
+    <div>
+      <p className="text-xs text-gray-500 mb-1">Payment</p>
+      <div className="space-y-1">
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+          selectedOrder.payment_type === 'prepaid' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+        }`}>
+          {selectedOrder.payment_type === 'prepaid' ? '💳 Prepaid' : '💵 COD'}
+        </span>
+        {selectedOrder.payment_type === 'prepaid' && (
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${
+            selectedOrder.payment_verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {selectedOrder.payment_verified ? '✓ Verified' : '⏳ Pending'}
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
 
-              {/* Franchise Info */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Franchise Details</h3>
-                <p className="text-gray-700">{selectedOrder.franchises?.franchise_name}</p>
-                <p className="text-sm text-gray-500">{selectedOrder.franchises?.owner_name} • {selectedOrder.franchises?.phone}</p>
-                <p className="text-sm text-gray-500 mt-1">{selectedOrder.franchises?.full_address}</p>
-              </div>
+  {/* Payment Details (if prepaid) */}
+  {selectedOrder.payment_type === 'prepaid' && (
+    <div className="bg-blue-50 rounded-lg p-4">
+      <h3 className="font-medium text-blue-900 mb-2">Payment Details</h3>
+      <div className="text-sm space-y-1">
+        {selectedOrder.payment_phone && (
+          <p className="text-blue-800">Phone: <span className="font-medium">{selectedOrder.payment_phone}</span></p>
+        )}
+        {selectedOrder.payment_transaction_id && (
+          <p className="text-blue-800">Transaction ID: <span className="font-mono font-medium">{selectedOrder.payment_transaction_id}</span></p>
+        )}
+        {selectedOrder.payment_verified && selectedOrder.payment_verified_at && (
+          <p className="text-green-700 text-xs mt-2">
+            Verified on {new Date(selectedOrder.payment_verified_at).toLocaleString('en-IN')}
+          </p>
+        )}
+      </div>
+    </div>
+  )}
 
-              {/* Delivery Info */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Delivery</h3>
-                <p className="text-gray-700">
-                  📅 {new Date(selectedOrder.delivery_date).toLocaleDateString('en-IN', {
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-                  })}
-                </p>
-                {selectedOrder.delivery_notes && (
-                  <p className="text-sm text-gray-500 mt-1">Notes: {selectedOrder.delivery_notes}</p>
+  {/* Franchise Info */}
+  <div className="bg-gray-50 rounded-lg p-4">
+    <h3 className="font-medium text-gray-900 mb-2">Franchise Details</h3>
+    <p className="text-gray-700">{selectedOrder.franchises?.franchise_name}</p>
+    <p className="text-sm text-gray-500">{selectedOrder.franchises?.owner_name} • {selectedOrder.franchises?.phone}</p>
+    <p className="text-sm text-gray-500 mt-1">{selectedOrder.franchises?.full_address}</p>
+    <p className="text-sm text-gray-500">{selectedOrder.franchises?.city}, {selectedOrder.franchises?.state}</p>
+  </div>
+
+  {/* Delivery Info */}
+  <div className="bg-blue-50 rounded-lg p-4">
+    <h3 className="font-medium text-blue-900 mb-2">Delivery Information</h3>
+    <p className="text-blue-800">
+      <strong>Date:</strong> {new Date(selectedOrder.delivery_date).toLocaleDateString('en-IN', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      })}
+    </p>
+    {selectedOrder.delivery_notes && (
+      <p className="text-blue-800 text-sm mt-1">
+        <strong>Notes:</strong> {selectedOrder.delivery_notes}
+      </p>
+    )}
+  </div>
+
+  {/* Order Items */}
+  <div>
+    <h3 className="font-medium text-gray-900 mb-2">Order Items</h3>
+    <div className="border rounded-lg overflow-hidden">
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="text-left py-2 px-3">Item</th>
+            <th className="text-right py-2 px-3">Qty</th>
+            <th className="text-right py-2 px-3">Rate</th>
+            <th className="text-right py-2 px-3">GST</th>
+            <th className="text-right py-2 px-3">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {selectedOrder.order_items?.map((item, index) => (
+            <tr key={index} className="border-t">
+              <td className="py-2 px-3">
+                <div>{item.product_name}</div>
+                {item.hsn_code && (
+                  <div className="text-xs text-gray-500">HSN: {item.hsn_code}</div>
                 )}
-              </div>
+              </td>
+              <td className="text-right py-2 px-3">{item.quantity}</td>
+              <td className="text-right py-2 px-3">₹{item.unit_price}</td>
+              <td className="text-right py-2 px-3">
+                {item.gst_rate > 0 && (
+                  <span className="text-xs">{item.gst_rate}%</span>
+                )}
+              </td>
+              <td className="text-right py-2 px-3 font-medium">₹{item.total_with_gst.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-              {/* Order Items */}
-              <div>
-                <h3 className="font-medium text-gray-900 mb-3">Order Items</h3>
-                <div className="space-y-2">
-                  {selectedOrder.order_items?.map(item => (
-                    <div key={item.id} className="flex justify-between py-2 border-b">
-                      <div>
-                        <p className="text-gray-900">{item.product_name}</p>
-                        <p className="text-sm text-gray-500">₹{item.unit_price} × {item.quantity}</p>
-                      </div>
-                      <p className="font-medium">₹{item.total_price}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between mt-4 pt-4 border-t">
-                  <span className="font-bold text-lg">Total</span>
-                  <span className="font-bold text-lg">₹{selectedOrder.total_amount}</span>
-                </div>
-              </div>
-            </div>
+  {/* Price Breakdown */}
+  <div className="bg-gray-50 rounded-lg p-4">
+    <h3 className="font-medium text-gray-900 mb-3">Price Breakdown</h3>
+    <div className="space-y-2 text-sm">
+      <div className="flex justify-between">
+        <span className="text-gray-600">Subtotal</span>
+        <span className="font-medium">₹{selectedOrder.subtotal?.toFixed(2)}</span>
+      </div>
+      
+      {selectedOrder.cgst_amount > 0 ? (
+        <>
+          <div className="flex justify-between">
+            <span className="text-gray-600">CGST</span>
+            <span className="font-medium">₹{selectedOrder.cgst_amount?.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">SGST</span>
+            <span className="font-medium">₹{selectedOrder.sgst_amount?.toFixed(2)}</span>
+          </div>
+        </>
+      ) : (
+        <div className="flex justify-between">
+          <span className="text-gray-600">IGST</span>
+          <span className="font-medium">₹{selectedOrder.igst_amount?.toFixed(2)}</span>
+        </div>
+      )}
+      
+      <div className="flex justify-between">
+        <span className="text-gray-600">Delivery Charges</span>
+        <span className="font-medium">
+          {selectedOrder.delivery_charges === 0 ? (
+            <span className="text-green-600">FREE</span>
+          ) : (
+            `₹${selectedOrder.delivery_charges?.toFixed(2)}`
+          )}
+        </span>
+      </div>
+      
+      <div className="border-t pt-2 flex justify-between text-base font-semibold">
+        <span>Total Amount</span>
+        <span className="text-brand-gold">₹{selectedOrder.total_amount?.toFixed(2)}</span>
+      </div>
+    </div>
+  </div>
+</div>
 
             {/* Actions */}
             {selectedOrder.status !== 'delivered' && selectedOrder.status !== 'cancelled' && (
