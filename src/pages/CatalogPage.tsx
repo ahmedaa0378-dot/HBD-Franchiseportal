@@ -83,7 +83,24 @@ const fetchData = async () => {
     addToCart(product, qty);
     setQuantities(prev => ({...prev, [product.id]: 1}));
   };
+  
+const handleAddBundleToCart = (bundle: Bundle) => {
+  bundle.bundle_items?.forEach(item => {
+    if (item.products) {
+      addToCart(item.products, item.quantity);
+    }
+  });
+  alert(`✅ ${bundle.name} added to cart!`);
+};
 
+const calculateBundleTotal = (bundle: Bundle) => {
+  const subtotal = bundle.bundle_items?.reduce((sum, item) => {
+    return sum + (item.products ? item.products.price * item.quantity : 0);
+  }, 0) || 0;
+  
+  const discount = (subtotal * bundle.discount_percentage) / 100;
+  return subtotal - discount;
+};
   if (loading) {
     return (
       <div className="min-h-screen bg-brand-cream">
