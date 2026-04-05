@@ -118,8 +118,121 @@ const calculateBundleTotal = (bundle: Bundle) => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="font-display text-3xl font-semibold text-brand-black mb-2">Order Supplies</h1>
         <p className="text-gray-600 mb-8">Raw materials delivered to your doorstep</p>
+{/* Product Bundles Section */}
+      {bundles.length > 0 && (
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-display text-2xl font-semibold text-brand-black">
+                🎁 Special Bundles
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Save with our curated product bundles
+              </p>
+            </div>
+          </div>
 
-        {/* Category Filter */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {bundles.map(bundle => {
+              const bundleTotal = calculateBundleTotal(bundle);
+              const originalTotal = bundle.bundle_items?.reduce((sum, item) => {
+                return sum + (item.products ? item.products.price * item.quantity : 0);
+              }, 0) || 0;
+
+              return (
+                <div key={bundle.id} className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-brand-gold/20 hover:border-brand-gold transition">
+                  {/* Bundle Header */}
+                  <div className="bg-gradient-to-r from-brand-gold to-yellow-500 p-4">
+                    <div className="flex items-center justify-between">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
+                        bundle.bundle_type === 'starter' ? 'bg-blue-600' :
+                        bundle.bundle_type === 'weekly' ? 'bg-green-600' :
+                        'bg-purple-600'
+                      }`}>
+                        {bundle.bundle_type === 'starter' ? '⭐ STARTER PACK' :
+                         bundle.bundle_type === 'weekly' ? '📦 WEEKLY PACK' :
+                         '🎉 SPECIAL OFFER'}
+                      </span>
+                      {bundle.discount_percentage > 0 && (
+                        <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                          {bundle.discount_percentage}% OFF
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bundle Content */}
+                  <div className="p-6">
+                    <h3 className="font-display text-xl font-semibold text-brand-black mb-2">
+                      {bundle.name}
+                    </h3>
+                    {bundle.description && (
+                      <p className="text-sm text-gray-600 mb-4">{bundle.description}</p>
+                    )}
+
+                    {/* Bundle Items */}
+                    <div className="space-y-2 mb-4">
+                      <p className="text-xs font-semibold text-gray-700 uppercase">Includes:</p>
+                      {bundle.bundle_items?.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="text-brand-gold">✓</span>
+                            <span className="text-gray-700">{item.products?.name}</span>
+                          </div>
+                          <span className="font-medium text-gray-900">×{item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pricing */}
+                    <div className="border-t pt-4 space-y-2">
+                      {bundle.discount_percentage > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500 line-through">Original Price</span>
+                          <span className="text-gray-500 line-through">₹{originalTotal.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold text-gray-900">Bundle Price</span>
+                        <span className="text-2xl font-bold text-brand-gold">
+                          ₹{bundleTotal.toFixed(2)}
+                        </span>
+                      </div>
+                      {bundle.discount_percentage > 0 && (
+                        <p className="text-xs text-green-600 font-medium">
+                          You save ₹{(originalTotal - bundleTotal).toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <button
+                      onClick={() => handleAddBundleToCart(bundle)}
+                      className="w-full mt-4 bg-brand-gold text-brand-black py-3 rounded-lg font-bold hover:bg-yellow-500 transition transform hover:scale-105"
+                    >
+                      🛒 Add Bundle to Cart
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Separator */}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-brand-cream px-4 text-sm text-gray-500 font-medium">
+                OR SHOP INDIVIDUAL PRODUCTS BELOW
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+       {/* Category Filter */}
         <div className="flex flex-wrap gap-3 mb-8">
           <button
             onClick={() => setSelectedCategory(null)}
