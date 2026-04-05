@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Logo from './Logo';
+import NotificationBell from './NotificationBell';
 
 const Header = () => {
   const { franchise, cartCount, signOut } = useApp();
