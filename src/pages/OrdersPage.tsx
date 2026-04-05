@@ -9,17 +9,43 @@ interface OrderItem {
   quantity: number;
   unit_price: number;
   total_price: number;
+  gst_rate: number;
+  hsn_code: string;
+  cgst_amount: number;
+  sgst_amount: number;
+  igst_amount: number;
+  total_with_gst: number;
 }
 
 interface Order {
   id: string;
   order_number: string;
+  subtotal: number;
+  gst_amount: number;
+  cgst_amount: number;
+  sgst_amount: number;
+  igst_amount: number;
+  delivery_charges: number;
   total_amount: number;
   status: string;
   payment_method: string;
+  payment_type: string;
+  payment_status: string;
+  payment_phone: string;
+  payment_transaction_id: string;
+  payment_verified: boolean;
+  payment_verified_at: string;
   delivery_date: string;
   delivery_notes: string;
   created_at: string;
+  franchises: {
+    franchise_name: string;
+    owner_name: string;
+    phone: string;
+    city: string;
+    full_address: string;
+    state: string;
+  };
   order_items: OrderItem[];
 }
 
