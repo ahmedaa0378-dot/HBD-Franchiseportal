@@ -58,7 +58,16 @@ const RegisterPage = () => {
         });
 
       if (franchiseError) throw franchiseError;
-
+// ADD THIS - Notify admins of new franchise registration
+      await supabase.rpc('create_notification', {
+        p_recipient_type: 'admin',
+        p_recipient_id: null,
+        p_notification_type: 'new_franchise',
+        p_title: `🏪 New Franchise Registration`,
+        p_message: `${formData.franchise_name} (${formData.city}) registered and needs approval`,
+        p_link: '/admin/franchises',
+        p_metadata: { franchise_name: formData.franchise_name, city: formData.city }
+      });
       setSuccess(true);
     } catch (err: any) {
       setError(err.message);
