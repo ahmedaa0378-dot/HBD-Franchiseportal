@@ -50,16 +50,25 @@ const CatalogPage = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    const [catRes, prodRes] = await Promise.all([
-      supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
-      supabase.from('products').select('*, categories(name)').eq('is_active', true).order('sort_order')
-    ]);
+const fetchData = async () => {
+  const [catRes, prodRes, bundlesRes] = await Promise.all([
+    supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
+    supabase.from('products').select('*, categories(name)').eq('is_active', true).order('sort_order'),
+    supabase.from('product_bundles').select(`
+      *,
+      bundle_items(
+        product_id,
+        quantity,
+        products(id, name, price, unit, gst_rate, image_url)
+      )
+    `).eq('is_active', true).order('sort_order')
+  ]);
 
-    if (catRes.data) setCategories(catRes.data);
-    if (prodRes.data) setProducts(prodRes.data);
-    setLoading(false);
-  };
+  if (catRes.data) setCategories(catRes.data);
+  if (prodRes.data) setProducts(prodRes.data);
+  if (bundlesRes.data) setBundles(bundlesRes.data);
+  setLoading(false);
+};
 
   const filteredProducts = selectedCategory 
     ? products.filter(p => p.category_id === selectedCategory)
