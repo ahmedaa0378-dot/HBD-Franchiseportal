@@ -22,7 +22,21 @@ interface Product {
   reorder_threshold: number;
   categories?: { name: string };
 }
+interface BundleItem {
+  product_id: string;
+  quantity: number;
+  products?: Product;
+}
 
+interface Bundle {
+  id: string;
+  name: string;
+  description: string;
+  bundle_type: string;
+  discount_percentage: number;
+  is_active: boolean;
+  bundle_items?: BundleItem[];
+}
 const CatalogPage = () => {
   const { addToCart } = useApp();
   const [categories, setCategories] = useState<Category[]>([]);
