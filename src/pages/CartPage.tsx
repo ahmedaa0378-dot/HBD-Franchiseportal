@@ -271,7 +271,17 @@ useEffect(() => {
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+if (itemsError) throw itemsError;
+
+      // ADD THIS - Mark cart snapshot as converted
+      await supabase
+        .from('cart_snapshots')
+        .update({
+          converted_to_order: true,
+          order_id: order.id
+        })
+        .eq('franchise_id', franchise?.id)
+        .eq('converted_to_order', false);
 
       clearCart();
       setSuccess(true);
