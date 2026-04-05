@@ -93,7 +93,21 @@ const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(n
   useEffect(() => {
     fetchSettings();
   }, []);
+useEffect(() => {
+    fetchSettings();
+  }, []);
 
+  // ADD THIS NEW USEEFFECT
+  useEffect(() => {
+    // Save cart snapshot whenever cart changes (debounced)
+    if (cart.length > 0) {
+      const timer = setTimeout(() => {
+        saveCartSnapshot();
+      }, 2000); // Wait 2 seconds after last change
+
+      return () => clearTimeout(timer);
+    }
+  }, [cart, subtotal, gstCalculation.total, deliveryCharges, grandTotal]);
   const fetchSettings = async () => {
     // Fetch delivery settings
     const { data: deliveryData } = await supabase
