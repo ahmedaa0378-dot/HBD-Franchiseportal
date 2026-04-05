@@ -191,7 +191,6 @@ const OrdersPage = () => {
                     </span>
                   </div>
                 </td>
-                    </td>
                     <td className="py-4 px-6">
                       <p className="text-gray-900">{order.franchises?.franchise_name}</p>
                       <p className="text-xs text-gray-500">{order.franchises?.city}</p>
