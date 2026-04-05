@@ -19,6 +19,8 @@ interface Product {
   image_url: string;
   stock_quantity: number;
   reorder_threshold: number;
+  gst_rate: number; // ADD THIS
+  hsn_code: string; // ADD THIS
   is_active: boolean;
   categories?: { name: string };
 }
@@ -34,6 +36,8 @@ const emptyProduct = {
   image_url: '',
   stock_quantity: 0,
   reorder_threshold: 10,
+  gst_rate: 18, // ADD THIS
+  hsn_code: '', // ADD THIS
   is_active: true
 };
 
@@ -465,7 +469,40 @@ const ProductsPage = () => {
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-gold outline-none"
                   />
                 </div>
+               {/* GST Rate Field */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">GST Rate (%)</label>
+  <select
+    value={formData.gst_rate || 18}
+    onChange={(e) => setFormData({ 
+      ...formData, 
+      gst_rate: parseFloat(e.target.value) 
+    })}
+    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-gold outline-none"
+  >
+    <option value="0">0% - Exempt</option>
+    <option value="5">5% GST</option>
+    <option value="12">12% GST</option>
+    <option value="18">18% GST</option>
+    <option value="28">28% GST</option>
+  </select>
+</div>
 
+{/* HSN Code Field */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    HSN Code
+    <span className="text-xs text-gray-500 ml-2">(Optional)</span>
+  </label>
+  <input
+    type="text"
+    maxLength={8}
+    value={formData.hsn_code || ''}
+    onChange={(e) => setFormData({ ...formData, hsn_code: e.target.value })}
+    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-gold outline-none"
+    placeholder="e.g., 09011011"
+  />
+</div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
                   <select
