@@ -5,7 +5,8 @@ import PaymentSettingsPage from './pages/admin/PaymentSettingsPage';
 import BundlesPage from './pages/admin/BundlesPage';
 import AbandonedCartsPage from './pages/admin/AbandonedCartsPage';
 import PerformancePage from './pages/admin/PerformancePage';
-
+import AdminResourcesPage from './pages/admin/AdminResourcesPage';
+import ResourcesPage from './pages/ResourcesPage';
 
 
 // Franchise Pages
