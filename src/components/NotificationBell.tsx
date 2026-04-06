@@ -217,8 +217,8 @@ const NotificationBell = ({ recipientType, recipientId }: NotificationBellProps)
                             {getTimeAgo(notification.created_at)}
                           </span>
 
-{notification.link && (
-                            
+                          {notification.link && (
+                            <a
                               href={notification.link}
                               onClick={() => {
                                 markAsRead(notification.id);
@@ -252,7 +252,6 @@ const NotificationBell = ({ recipientType, recipientId }: NotificationBellProps)
             <div className="bg-gray-50 px-4 py-2 border-t text-center">
               <button
                 onClick={() => {
-                  // Navigate to notifications page (we'll create this)
                   setIsOpen(false);
                 }}
                 className="text-sm text-blue-600 hover:underline"
