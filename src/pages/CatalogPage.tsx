@@ -39,7 +39,6 @@ interface Bundle {
   bundle_items?: BundleItem[];
 }
 const CatalogPage = () => {
-  const { addToCart } = useApp();
   const { addToCart, franchise } = useApp();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
