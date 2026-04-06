@@ -140,7 +140,7 @@ const OrdersPage = () => {
                   </div>
                 </div>
 
-                {/* Order Details */}
+ {/* Order Details */}
                 {selectedOrder === order.id && (
                   <div className="border-t bg-gray-50 p-4">
                     <p className="font-medium text-brand-black mb-3">Order Items</p>
@@ -163,6 +163,8 @@ const OrdersPage = () => {
                         <div className="mt-2">
                           <span className="text-sm text-gray-600">Notes: {order.delivery_notes}</span>
                         </div>
+                      )}
+                    </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
