@@ -121,6 +121,8 @@ function App() {
         <Route path="/admin/abandoned-carts" element={<AbandonedCartsPage />} />
         <Route path="/admin/performance" element={<PerformancePage />} />
         <Route path="/admin/resources" element={<AdminResourcesPage />} />
+        <Route path="/admin/reports" element={<AdminReportsPage />} />
+
 
 
         {/* ============ DEFAULT REDIRECTS ============ */}
