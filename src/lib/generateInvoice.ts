@@ -58,14 +58,14 @@ const GRAY_200 = '#E5E7EB';
 const COMPANY = {
   name: 'Half Billion Dollar',
   tagline: 'Premium Coffee Franchise',
-  address: 'Corporate Office Address',
-  city: 'Mumbai',
-  state: 'Maharashtra',
-  pincode: '400001',
+  address: 'Your actual office address',
+  city: 'Your city',
+  state: 'Your state',
+  pincode: 'XXXXXX',
   phone: '+91 XXXXX XXXXX',
   email: 'orders@halfbilliondollar.com',
   website: 'www.halfbilliondollar.com',
-  gstin: 'XXXXXXXXXXXXXXXXXXXX', // Update with actual GSTIN
+  gstin: 'Your actual GSTIN',
 };
 
 // ─── Helper ──────────────────────────────────────────────────
