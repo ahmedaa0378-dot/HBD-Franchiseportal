@@ -226,7 +226,7 @@ const NotificationBell = ({ recipientType, recipientId }: NotificationBellProps)
                               }}
                               className="text-xs text-blue-600 hover:underline"
                             >
-                              View →
+                              View
                             </a>
                           )}
 
