@@ -40,12 +40,14 @@ interface Bundle {
 }
 const CatalogPage = () => {
   const { addToCart } = useApp();
+  const { addToCart, franchise } = useApp();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [bundles, setBundles] = useState<Bundle[]>([]);
+  
 
   useEffect(() => {
     fetchData();
