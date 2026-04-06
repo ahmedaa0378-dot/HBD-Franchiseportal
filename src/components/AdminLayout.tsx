@@ -69,8 +69,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     items: [
       { path: '/admin/bundles', label: 'Bundles', icon: '🎁' },
       { path: '/admin/inventory', label: 'Inventory', icon: '📋' },
-      { path: '/admin/delivery', label: 'Delivery', icon: '🚚' },
-      { path: '/admin/payment', label: 'Payment', icon: '💳' },
+      { path: '/admin/delivery-settings', label: 'Delivery', icon: '🚚' },
+      { path: '/admin/payment-settings', label: 'Payment', icon: '💳' },
       { path: '/admin/abandoned-carts', label: 'Abandoned Carts', icon: '⚠️' },
     ],
   };
