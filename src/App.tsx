@@ -4,6 +4,8 @@ import DeliverySettingsPage from './pages/admin/DeliverySettingsPage';
 import PaymentSettingsPage from './pages/admin/PaymentSettingsPage';
 import BundlesPage from './pages/admin/BundlesPage';
 import AbandonedCartsPage from './pages/admin/AbandonedCartsPage';
+import PerformancePage from './pages/admin/PerformancePage';
+
 
 
 // Franchise Pages
