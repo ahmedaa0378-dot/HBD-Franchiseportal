@@ -175,9 +175,6 @@ const OrdersPage = () => {
                       📄 Download Invoice
                     </button>
                   </div>
-                    )}
-                    </div>
-                  </div>
                 )}
               </div>
             ))}
