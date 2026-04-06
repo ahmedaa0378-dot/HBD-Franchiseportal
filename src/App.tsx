@@ -103,6 +103,9 @@ function App() {
         <Route path="/orders" element={
           <ProtectedRoute><OrdersPage /></ProtectedRoute>
         } />
+        <Route path="/resources" element={
+          <ProtectedRoute><ResourcesPage /></ProtectedRoute>
+        } />
 
         {/* ============ ADMIN ROUTES ============ */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
