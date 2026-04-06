@@ -218,17 +218,17 @@ const NotificationBell = ({ recipientType, recipientId }: NotificationBellProps)
                           </span>
 
 {notification.link && (
-  
-    href={notification.link}
-    onClick={() => {
-      markAsRead(notification.id);
-      setIsOpen(false);
-    }}
-    className="text-xs text-brand-gold hover:underline"
-  >
-    View
-  </a>
-)}
+                            
+                              href={notification.link}
+                              onClick={() => {
+                                markAsRead(notification.id);
+                                setIsOpen(false);
+                              }}
+                              className="text-xs text-brand-gold hover:underline"
+                            >
+                              View
+                            </a>
+                          )}
 
                           {!notification.is_read && (
                             <button
