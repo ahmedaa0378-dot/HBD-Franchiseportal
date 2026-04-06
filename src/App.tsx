@@ -116,6 +116,7 @@ function App() {
         <Route path="/admin/bundles" element={<BundlesPage />} />
         <Route path="/admin/abandoned-carts" element={<AbandonedCartsPage />} />
         <Route path="/admin/performance" element={<PerformancePage />} />
+        <Route path="/admin/resources" element={<AdminResourcesPage />} />
 
 
         {/* ============ DEFAULT REDIRECTS ============ */}
