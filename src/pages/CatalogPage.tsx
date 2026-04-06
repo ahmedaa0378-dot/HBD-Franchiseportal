@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
+import ReorderSuggestions from '../components/ReorderSuggestions';
 
 interface Category {
   id: string;
