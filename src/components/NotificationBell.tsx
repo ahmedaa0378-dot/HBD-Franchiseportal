@@ -224,6 +224,7 @@ const NotificationBell = ({ recipientType, recipientId }: NotificationBellProps)
       markAsRead(notification.id);
       setIsOpen(false);
     }}
+    className="text-xs text-brand-gold hover:underline"
   >
     View
   </a>
