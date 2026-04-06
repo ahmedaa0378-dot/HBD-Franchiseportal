@@ -7,7 +7,7 @@ import AbandonedCartsPage from './pages/admin/AbandonedCartsPage';
 import PerformancePage from './pages/admin/PerformancePage';
 import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import ResourcesPage from './pages/ResourcesPage';
-
+import { generateInvoice } from '../lib/generateInvoice';
 
 // Franchise Pages
 import LoginPage from './pages/LoginPage';
