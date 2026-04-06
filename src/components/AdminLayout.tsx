@@ -39,6 +39,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: '/admin/delivery-settings', label: 'Delivery', icon: '🚚' }, // ADD THIS
     { path: '/admin/payment-settings', label: 'Payment', icon: '💳' }, // ADD THIS
     { path: '/admin/performance', label: 'Performance', icon: '📈' },
+    { path: '/admin/reports', label: 'Reports', icon: '📊' },
 
 
   ];
