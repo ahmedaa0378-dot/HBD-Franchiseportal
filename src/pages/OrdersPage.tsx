@@ -163,6 +163,18 @@ const OrdersPage = () => {
                         <div className="mt-2">
                           <span className="text-sm text-gray-600">Notes: {order.delivery_notes}</span>
                         </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        generateInvoice(order as any, franchise as any);
+                      }}
+                      className="w-full mt-3 flex items-center justify-center gap-2 py-2 bg-brand-gold text-brand-black rounded-lg text-sm font-medium hover:bg-brand-gold-light transition"
+                    >
+                      📄 Download Invoice
+                    </button>
+                  </div>
+                )}
+              </div>
                       )}
                     </div>
                   </div>
