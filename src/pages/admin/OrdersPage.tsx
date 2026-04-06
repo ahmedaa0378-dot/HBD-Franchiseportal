@@ -428,7 +428,7 @@ const updateOrderStatus = async (orderId: string, newStatus: string) => {
 {selectedOrder.payment_type === 'prepaid' && !selectedOrder.payment_verified && (
   <div className="p-6 border-t bg-green-50">
     <button
-      onClick={async () => {
+onClick={async () => {
         setUpdating(true);
         const { error } = await supabase
           .from('orders')
@@ -439,6 +439,17 @@ const updateOrderStatus = async (orderId: string, newStatus: string) => {
           .eq('id', selectedOrder.id);
 
         if (!error) {
+          // ADD THIS - Notify franchise
+          await supabase.rpc('create_notification', {
+            p_recipient_type: 'franchise',
+            p_recipient_id: selectedOrder.franchise_id,
+            p_notification_type: 'payment_verified',
+            p_title: `✅ Payment Verified`,
+            p_message: `Your prepaid payment for order ${selectedOrder.order_number} has been verified!`,
+            p_link: '/orders',
+            p_metadata: { order_id: selectedOrder.id }
+          });
+          
           setOrders(prev =>
             prev.map(o => o.id === selectedOrder.id 
               ? { ...o, payment_verified: true, payment_verified_at: new Date().toISOString() } 
@@ -450,8 +461,6 @@ const updateOrderStatus = async (orderId: string, newStatus: string) => {
             payment_verified_at: new Date().toISOString()
           });
           alert('✅ Payment verified successfully');
-        } else {
-          alert('❌ Failed to verify payment');
         }
         setUpdating(false);
       }}
