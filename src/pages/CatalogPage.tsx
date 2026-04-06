@@ -259,7 +259,10 @@ const calculateBundleTotal = (bundle: Bundle) => {
             </button>
           ))}
         </div>
-
+{/* Reorder Suggestions */}
+        {franchise && (
+          <ReorderSuggestions franchiseId={franchise.id} />
+        )}
         {/* Products Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map(product => (
