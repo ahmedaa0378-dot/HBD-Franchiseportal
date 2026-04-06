@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
+import { generateInvoice } from '../lib/generateInvoice';
+
 
 interface OrderItem {
   id: string;
