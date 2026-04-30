@@ -19,7 +19,7 @@ interface PaymentSettings {
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cart, cartTotal, updateCartQuantity, removeFromCart, clearCart, franchise } = useApp();
+  const { cart, updateCartQuantity, removeFromCart, clearCart, franchise } = useApp();
   const [deliveryDate, setDeliveryDate] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [paymentType, setPaymentType] = useState<'cod' | 'prepaid'>('cod');
@@ -93,21 +93,7 @@ const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(n
   useEffect(() => {
     fetchSettings();
   }, []);
-useEffect(() => {
-    fetchSettings();
-  }, []);
 
-  // ADD THIS NEW USEEFFECT
-  useEffect(() => {
-    // Save cart snapshot whenever cart changes (debounced)
-    if (cart.length > 0) {
-      const timer = setTimeout(() => {
-        saveCartSnapshot();
-      }, 2000); // Wait 2 seconds after last change
-
-      return () => clearTimeout(timer);
-    }
-  }, [cart, subtotal, gstCalculation.total, deliveryCharges, grandTotal]);
   const fetchSettings = async () => {
     // Fetch delivery settings
     const { data: deliveryData } = await supabase
@@ -178,6 +164,17 @@ useEffect(() => {
 
   // Grand total
   const grandTotal = subtotal + gstCalculation.total + deliveryCharges;
+
+  // Save cart snapshot whenever cart changes (debounced)
+  useEffect(() => {
+    if (cart.length > 0) {
+      const timer = setTimeout(() => {
+        saveCartSnapshot();
+      }, 2000); // Wait 2 seconds after last change
+
+      return () => clearTimeout(timer);
+    }
+  }, [cart, subtotal, gstCalculation.total, deliveryCharges, grandTotal]);
 
   // MOQ validation
   const meetsMinimumOrder = grandTotal >= 2000;
@@ -401,7 +398,7 @@ if (itemsError) throw itemsError;
                     )}
                   </p>
 
-                  <div className="flex items-center gap-4 mt-3">
+                  <div className="flex items-center gap-4 mt-3 flex-wrap">
                     <div className="flex items-center border rounded-lg">
                       <button 
                         onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
@@ -435,7 +432,7 @@ if (itemsError) throw itemsError;
           {/* Order Summary & Checkout */}
           <div className="space-y-4">
             {/* Order Summary */}
-            <div className="bg-white rounded-xl p-6 shadow-md sticky top-24">
+            <div className="bg-white rounded-xl p-6 shadow-md lg:sticky lg:top-24">
               <h2 className="font-display text-xl font-semibold text-brand-black mb-4">
                 Order Summary
               </h2>
