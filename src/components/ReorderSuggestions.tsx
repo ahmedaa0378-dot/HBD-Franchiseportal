@@ -227,6 +227,8 @@ const ReorderSuggestions = ({ franchiseId }: ReorderSuggestionsProps) => {
       sku: '',
       stock_quantity: 999,
       reorder_threshold: 0,
+      gst_rate: 0,
+      hsn_code: '',
       is_active: true,
       min_order_qty: 1,
     };
