@@ -50,36 +50,7 @@ const AbandonedCartsPage = () => {
 
   const sendReminder = async (cart: CartSnapshot) => {
     setSendingReminder(true);
-const sendReminder = async (cart: CartSnapshot) => {
-    setSendingReminder(true);
 
-    try {
-      // Create notification for franchise
-      await supabase.rpc('create_notification', {
-        p_recipient_type: 'franchise',
-        p_recipient_id: cart.franchise_id,
-        p_notification_type: 'cart_reminder',
-        p_title: '🛒 You have items waiting in your cart',
-        p_message: `You left ${cart.cart_data?.items?.length || 0} items worth ₹${cart.cart_total.toFixed(2)} in your cart. Complete your order now!`,
-        p_link: '/cart',
-        p_metadata: { cart_snapshot_id: cart.id }
-      });
-
-      // Mark reminder as sent
-      await supabase
-        .from('cart_snapshots')
-        .update({ reminder_sent_at: new Date().toISOString() })
-        .eq('id', cart.id);
-
-      await fetchAbandonedCarts();
-      setShowModal(false);
-      alert('✅ Reminder notification sent');
-    } catch (error) {
-      alert('❌ Failed to send reminder');
-    } finally {
-      setSendingReminder(false);
-    }
-  };
     try {
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
       
