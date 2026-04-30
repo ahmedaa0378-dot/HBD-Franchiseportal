@@ -11,7 +11,6 @@ import {
   BarChart3,
   Clock,
   MapPin,
-  ChevronRight,
   RefreshCw,
   Calendar,
 } from 'lucide-react';
