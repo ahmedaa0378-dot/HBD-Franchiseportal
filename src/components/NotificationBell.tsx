@@ -16,9 +16,10 @@ interface Notification {
 interface NotificationBellProps {
   recipientType: 'franchise' | 'admin';
   recipientId: string;
+  align?: 'left' | 'right';
 }
 
-const NotificationBell = ({ recipientType, recipientId }: NotificationBellProps) => {
+const NotificationBell = ({ recipientType, recipientId, align = 'right' }: NotificationBellProps) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -147,7 +148,7 @@ const NotificationBell = ({ recipientType, recipientId }: NotificationBellProps)
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+        <div className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50`}>
           {/* Header */}
           <div className="bg-gray-50 px-4 py-3 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
