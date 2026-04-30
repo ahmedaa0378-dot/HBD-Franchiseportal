@@ -29,11 +29,17 @@ const Header = () => {
               >
                 Products
               </Link>
-              <Link 
+              <Link
                 to="/orders"
                 className={`text-sm hover:text-brand-gold transition ${isActive('/orders') ? 'text-brand-gold' : ''}`}
               >
                 My Orders
+              </Link>
+              <Link
+                to="/resources"
+                className={`text-sm hover:text-brand-gold transition ${isActive('/resources') ? 'text-brand-gold' : ''}`}
+              >
+                Resources
               </Link>
               {/* Notification Bell - ADD THIS */}
               <NotificationBell 
@@ -84,13 +90,19 @@ const Header = () => {
             >
               Products
             </Link>
-            <Link 
+            <Link
               to="/orders"
               className={`text-sm ${isActive('/orders') ? 'text-brand-gold' : 'text-gray-400'}`}
             >
               Orders
             </Link>
-            <Link 
+            <Link
+              to="/resources"
+              className={`text-sm ${isActive('/resources') ? 'text-brand-gold' : 'text-gray-400'}`}
+            >
+              Resources
+            </Link>
+            <Link
               to="/cart"
               className={`text-sm ${isActive('/cart') ? 'text-brand-gold' : 'text-gray-400'} flex items-center gap-1`}
             >
