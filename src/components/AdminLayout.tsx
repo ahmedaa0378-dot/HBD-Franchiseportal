@@ -107,7 +107,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </div>
         <div className="flex items-center gap-1">
           {adminUserId && (
-            <NotificationBell recipientType="admin" recipientId={adminUserId} />
+            <NotificationBell recipientType="admin" recipientId={adminUserId} align="left" />
           )}
           {/* Mobile close button */}
           <button
