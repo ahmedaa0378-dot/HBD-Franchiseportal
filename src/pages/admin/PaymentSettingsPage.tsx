@@ -67,7 +67,7 @@ const PaymentSettingsPage = () => {
       const filePath = `payment/${fileName}`;
 
       // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(filePath, file);
 
