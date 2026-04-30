@@ -10,18 +10,33 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
       if (error) throw error;
+
+      // Check if this user has a franchise account
+      const { data: franchiseData } = await supabase
+        .from('franchises')
+        .select('id, status')
+        .eq('auth_user_id', data.user.id)
+        .maybeSingle();
+
+      if (!franchiseData) {
+        setError('No franchise account found for this email. If you are an admin, please use the admin login.');
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
       navigate('/catalog');
     } catch (err: any) {
       setError(err.message);
