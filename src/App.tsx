@@ -46,7 +46,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
-  if (!franchise) return <LoadingScreen />;
+  if (!franchise) return <Navigate to="/login" replace />;
   if (franchise.status === 'pending') return <PendingApprovalPage />;
   if (franchise.status === 'rejected') {
     return (
