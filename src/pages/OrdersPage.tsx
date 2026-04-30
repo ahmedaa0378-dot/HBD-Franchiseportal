@@ -58,8 +58,9 @@ const OrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!franchise?.id) return;
     fetchOrders();
-  }, []);
+  }, [franchise?.id]);
 
   const fetchOrders = async () => {
     const { data } = await supabase
