@@ -18,9 +18,13 @@ interface Product {
   sku: string;
   price: number;
   unit: string;
+  min_order_qty: number;
   image_url: string;
   stock_quantity: number;
   reorder_threshold: number;
+  gst_rate: number;
+  hsn_code: string;
+  is_active: boolean;
   categories?: { name: string };
 }
 interface BundleItem {
