@@ -7,7 +7,6 @@ import {
   Video,
   Image as ImageIcon,
   Trash2,
-  Plus,
   X,
   Search,
   Eye,
@@ -17,7 +16,6 @@ import {
   GraduationCap,
   Megaphone,
   ClipboardList,
-  ExternalLink,
   File,
 } from 'lucide-react';
 
@@ -44,18 +42,6 @@ const CATEGORIES = [
   { value: 'sop', label: 'SOPs', icon: ClipboardList, color: 'bg-purple-100 text-purple-700' },
   { value: 'marketing', label: 'Marketing', icon: Megaphone, color: 'bg-pink-100 text-pink-700' },
 ];
-
-const FILE_TYPE_ICONS: Record<string, typeof FileText> = {
-  pdf: FileText,
-  video: Video,
-  image: ImageIcon,
-};
-
-const ACCEPTED_TYPES: Record<string, string> = {
-  pdf: '.pdf',
-  video: '.mp4,.mov,.webm,.avi',
-  image: '.jpg,.jpeg,.png,.webp,.gif',
-};
 
 // ─── Helpers ─────────────────────────────────────────────────
 const formatFileSize = (bytes: number): string => {
@@ -123,7 +109,6 @@ const AdminResourcesPage = () => {
 
     try {
       const fileType = detectFileType(uploadFile.name);
-      const fileExt = uploadFile.name.split('.').pop();
       const filePath = `${uploadCategory}/${Date.now()}_${uploadFile.name.replace(/\s+/g, '_')}`;
 
       // Upload to Supabase Storage
@@ -310,7 +295,6 @@ const AdminResourcesPage = () => {
           {filteredResources.map(resource => {
             const catConfig = getCategoryConfig(resource.category);
             const CatIcon = catConfig.icon;
-            const FileIcon = FILE_TYPE_ICONS[resource.file_type] || File;
 
             return (
               <div
