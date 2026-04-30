@@ -4,10 +4,8 @@ import Header from '../components/Header';
 import {
   Search,
   FileText,
-  Video,
   Image as ImageIcon,
   Download,
-  Eye,
   Play,
   BookOpen,
   ChefHat,
