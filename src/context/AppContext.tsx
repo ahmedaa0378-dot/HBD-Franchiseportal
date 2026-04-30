@@ -33,6 +33,8 @@ interface Product {
   image_url: string;
   stock_quantity: number;
   reorder_threshold: number;
+  gst_rate: number;
+  hsn_code: string;
   is_active: boolean;
   categories?: { name: string };
 }
@@ -85,28 +87,39 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchFranchise(session.user.id);
-      } else {
-        setFranchise(null);
-        setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          if (!franchise) {
+            await fetchFranchise(session.user.id);
+          }
+        } else {
+          setUser(null);
+          setFranchise(null);
+          setLoading(false);
+        }
       }
-    });
+    );
 
     return () => subscription.unsubscribe();
   }, []);
 
   const fetchFranchise = async (authUserId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('franchises')
       .select('*')
       .eq('auth_user_id', authUserId)
-      .single();
-    
+      .maybeSingle();
+
+    if (error) {
+      console.error('Failed to load franchise:', error);
+    }
+
     if (data) {
       setFranchise(data);
+    } else {
+      setFranchise(null);
     }
     setLoading(false);
   };
