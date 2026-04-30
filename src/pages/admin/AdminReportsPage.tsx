@@ -13,7 +13,6 @@ import {
   Receipt,
   Loader2,
   RefreshCw,
-  IndianRupee,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────
