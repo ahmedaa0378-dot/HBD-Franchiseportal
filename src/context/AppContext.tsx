@@ -47,6 +47,8 @@ interface CartItem {
 interface AppContextType {
   user: User | null;
   franchise: Franchise | null;
+  isAdmin: boolean;
+  adminChecked: boolean;
   cart: CartItem[];
   cartTotal: number;
   cartCount: number;
@@ -72,6 +74,8 @@ export const useApp = () => {
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [franchise, setFranchise] = useState<Franchise | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -81,8 +85,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchFranchise(session.user.id);
+        checkAdmin(session.user.id);
       } else {
         setLoading(false);
+        setAdminChecked(true);
       }
     });
 
@@ -94,9 +100,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           if (!franchise) {
             await fetchFranchise(session.user.id);
           }
+          await checkAdmin(session.user.id);
         } else {
           setUser(null);
           setFranchise(null);
+          setIsAdmin(false);
+          setAdminChecked(true);
           setLoading(false);
         }
       }
@@ -104,6 +113,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdmin = async (authUserId: string) => {
+    const { data: adminData } = await supabase
+      .from('admin_users')
+      .select('id')
+      .eq('auth_user_id', authUserId)
+      .maybeSingle();
+    setIsAdmin(!!adminData);
+    setAdminChecked(true);
+  };
 
   const fetchFranchise = async (authUserId: string) => {
     const { data, error } = await supabase
@@ -166,12 +185,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setFranchise(null);
     setCart([]);
+    setIsAdmin(false);
+    setAdminChecked(false);
   };
 
   return (
     <AppContext.Provider value={{
       user,
       franchise,
+      isAdmin,
+      adminChecked,
       cart,
       cartTotal,
       cartCount,
