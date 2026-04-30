@@ -159,9 +159,9 @@ function App() {
 
 
         {/* ============ DEFAULT REDIRECTS ============ */}
-        <Route path="/" element={<Navigate to="/catalog" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/catalog" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
