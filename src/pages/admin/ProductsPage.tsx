@@ -144,6 +144,8 @@ const ProductsPage = () => {
       image_url: product.image_url || '',
       stock_quantity: product.stock_quantity,
       reorder_threshold: product.reorder_threshold,
+      gst_rate: product.gst_rate ?? 18,
+      hsn_code: product.hsn_code ?? '',
       is_active: product.is_active
     });
     setImagePreview(product.image_url || '');
