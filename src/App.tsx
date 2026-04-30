@@ -84,6 +84,15 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Protected Route for Admin
+const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAdmin, adminChecked, loading } = useApp();
+
+  if (loading || !adminChecked) return <LoadingScreen />;
+  if (!user || !isAdmin) return <Navigate to="/admin/login" replace />;
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -110,18 +119,42 @@ function App() {
 
         {/* ============ ADMIN ROUTES ============ */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin/dashboard" element={<DashboardPage />} />
-        <Route path="/admin/franchises" element={<FranchisesPage />} />
-        <Route path="/admin/products" element={<ProductsPage />} />
-        <Route path="/admin/orders" element={<AdminOrdersPage />} />
-        <Route path="/admin/inventory" element={<InventoryPage />} />
-        <Route path="/admin/delivery-settings" element={<DeliverySettingsPage />} />
-        <Route path="/admin/payment-settings" element={<PaymentSettingsPage />} />
-        <Route path="/admin/bundles" element={<BundlesPage />} />
-        <Route path="/admin/abandoned-carts" element={<AbandonedCartsPage />} />
-        <Route path="/admin/performance" element={<PerformancePage />} />
-        <Route path="/admin/resources" element={<AdminResourcesPage />} />
-        <Route path="/admin/reports" element={<AdminReportsPage />} />
+        <Route path="/admin/dashboard" element={
+          <AdminProtectedRoute><DashboardPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/franchises" element={
+          <AdminProtectedRoute><FranchisesPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/products" element={
+          <AdminProtectedRoute><ProductsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/orders" element={
+          <AdminProtectedRoute><AdminOrdersPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/inventory" element={
+          <AdminProtectedRoute><InventoryPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/delivery-settings" element={
+          <AdminProtectedRoute><DeliverySettingsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/payment-settings" element={
+          <AdminProtectedRoute><PaymentSettingsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/bundles" element={
+          <AdminProtectedRoute><BundlesPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/abandoned-carts" element={
+          <AdminProtectedRoute><AbandonedCartsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/performance" element={
+          <AdminProtectedRoute><PerformancePage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/resources" element={
+          <AdminProtectedRoute><AdminResourcesPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/reports" element={
+          <AdminProtectedRoute><AdminReportsPage /></AdminProtectedRoute>
+        } />
 
 
 
