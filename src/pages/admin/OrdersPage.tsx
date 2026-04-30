@@ -8,25 +8,43 @@ interface OrderItem {
   quantity: number;
   unit_price: number;
   total_price: number;
+  gst_rate: number;
+  hsn_code: string;
+  cgst_amount: number;
+  sgst_amount: number;
+  igst_amount: number;
+  total_with_gst: number;
 }
 
 interface Order {
   id: string;
   order_number: string;
+  franchise_id: string;
   subtotal: number;
+  cgst_amount: number;
+  sgst_amount: number;
+  igst_amount: number;
+  delivery_charges: number;
   total_amount: number;
   status: string;
   payment_method: string;
+  payment_type: string;
   payment_status: string;
+  payment_phone: string | null;
+  payment_transaction_id: string | null;
+  payment_verified: boolean;
+  payment_verified_at: string | null;
   delivery_date: string;
   delivery_notes: string;
   created_at: string;
   franchises: {
+    id: string;
     franchise_name: string;
     owner_name: string;
     phone: string;
     city: string;
     full_address: string;
+    state: string;
   };
   order_items: OrderItem[];
 }
@@ -46,7 +64,7 @@ const OrdersPage = () => {
   const fetchOrders = async () => {
     const { data } = await supabase
       .from('orders')
-      .select('*, franchises(franchise_name, owner_name, phone, city, full_address), order_items(*)')
+      .select('*, franchises(id, franchise_name, owner_name, phone, city, state, full_address), order_items(*)')
       .order('created_at', { ascending: false });
 
     if (data) setOrders(data as any);
