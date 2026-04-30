@@ -47,13 +47,6 @@ interface InvoiceFranchise {
   gst_number?: string;
 }
 
-// ─── Brand Colors ────────────────────────────────────────────
-const BRAND_BLACK = '#1A1A1A';
-const BRAND_GOLD = '#C9A962';
-const GRAY_600 = '#4B5563';
-const GRAY_400 = '#9CA3AF';
-const GRAY_200 = '#E5E7EB';
-
 // ─── Company Info (Update with your actual details) ──────────
 const COMPANY = {
   name: 'Half Billion Dollar',
