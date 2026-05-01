@@ -78,108 +78,138 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [adminChecked, setAdminChecked] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const initializedRef = useRef(false);
+  const initialSessionFetchedRef = useRef(false);
 
+  // Auth subscription. The onAuthStateChange callback MUST stay synchronous —
+  // Supabase v2 holds an internal lock while dispatching SIGNED_IN/SIGNED_OUT,
+  // and any awaited supabase call inside (including .from() table queries,
+  // which read the JWT via getSession()) deadlocks signInWithPassword forever.
+  // We only update `user` here; a separate effect on user.id does the fetching.
   useEffect(() => {
-    // Prevent double-init in React 18 StrictMode
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+    let mounted = true;
 
-    // Safety timeout — if loading is STILL true after 8 seconds, force it off.
-    // This catches any edge case where Supabase hangs, network fails, etc.
-    const timeout = setTimeout(() => {
-      setLoading(false);
-      setAdminChecked(true);
-    }, 8000);
-
-    const initialize = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (error) {
-          console.error('getSession error:', error);
+    if (!initialSessionFetchedRef.current) {
+      initialSessionFetchedRef.current = true;
+      supabase.auth.getSession()
+        .then(({ data: { session }, error }) => {
+          if (!mounted) return;
+          if (error) {
+            console.error('getSession error:', error);
+            setLoading(false);
+            setAdminChecked(true);
+            return;
+          }
+          if (session?.user) {
+            setUser(session.user);
+            // user-effect below picks this up and fetches franchise + admin
+          } else {
+            setLoading(false);
+            setAdminChecked(true);
+          }
+        })
+        .catch((err) => {
+          if (!mounted) return;
+          console.error('Auth initialization failed:', err);
           setLoading(false);
           setAdminChecked(true);
-          return;
-        }
+        });
+    }
 
-        if (session?.user) {
-          setUser(session.user);
-          await Promise.all([
-            fetchFranchise(session.user.id),
-            checkAdmin(session.user.id),
-          ]);
-        } else {
-          setLoading(false);
-          setAdminChecked(true);
-        }
-      } catch (err) {
-        console.error('Auth initialization failed:', err);
-        setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      if (!nextUser) {
+        setFranchise(null);
+        setIsAdmin(false);
         setAdminChecked(true);
+        setLoading(false);
       }
-    };
-
-    initialize();
-
-    // Listen for auth changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await Promise.all([
-            fetchFranchise(session.user.id),
-            checkAdmin(session.user.id),
-          ]);
-        } else {
-          setUser(null);
-          setFranchise(null);
-          setIsAdmin(false);
-          setAdminChecked(true);
-          setLoading(false);
-        }
-      }
-    );
+      // If nextUser is set, the [user?.id] effect below handles the fetching.
+    });
 
     return () => {
-      clearTimeout(timeout);
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  const checkAdmin = async (authUserId: string) => {
-    try {
-      const { data: adminData } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('auth_user_id', authUserId)
-        .maybeSingle();
-      setIsAdmin(!!adminData);
-    } catch (err) {
-      console.error('checkAdmin error:', err);
-      setIsAdmin(false);
-    }
-    setAdminChecked(true);
-  };
+  // Fetch franchise + admin status whenever the signed-in user changes.
+  // Runs OUTSIDE the auth lock, so awaiting supabase queries here is safe.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const authUserId = user.id;
 
-  const fetchFranchise = async (authUserId: string) => {
+    setLoading(true);
+    setAdminChecked(false);
+
+    // Re-armed safety net: if any post-login fetch hangs, force loading off after 8s.
+    // The original code only ran this on initial mount, so a hung post-login fetch
+    // would leave loading=true forever.
+    const safetyTimeout = setTimeout(() => {
+      if (cancelled) return;
+      console.warn('[AppContext] auth fetch safety timeout — releasing loading state');
+      setLoading(false);
+      setAdminChecked(true);
+    }, 8000);
+
+    const fetchFranchiseInline = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('franchises')
+          .select('*')
+          .eq('auth_user_id', authUserId)
+          .maybeSingle();
+        if (error) console.error('fetchFranchise error:', error);
+        if (!cancelled) setFranchise(data ?? null);
+      } catch (err) {
+        console.error('fetchFranchise failed:', err);
+        if (!cancelled) setFranchise(null);
+      }
+    };
+
+    const checkAdminInline = async () => {
+      try {
+        const { data } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('auth_user_id', authUserId)
+          .maybeSingle();
+        if (!cancelled) setIsAdmin(!!data);
+      } catch (err) {
+        console.error('checkAdmin error:', err);
+        if (!cancelled) setIsAdmin(false);
+      }
+    };
+
+    Promise.all([fetchFranchiseInline(), checkAdminInline()])
+      .finally(() => {
+        clearTimeout(safetyTimeout);
+        if (cancelled) return;
+        setLoading(false);
+        setAdminChecked(true);
+      });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(safetyTimeout);
+    };
+  }, [user?.id]);
+
+  const refreshFranchise = async () => {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from('franchises')
         .select('*')
-        .eq('auth_user_id', authUserId)
+        .eq('auth_user_id', user.id)
         .maybeSingle();
-
-      if (error) {
-        console.error('fetchFranchise error:', error);
-      }
-
+      if (error) console.error('refreshFranchise error:', error);
       setFranchise(data ?? null);
     } catch (err) {
-      console.error('fetchFranchise failed:', err);
-      setFranchise(null);
+      console.error('refreshFranchise failed:', err);
     }
-    setLoading(false);
   };
 
   const addToCart = (product: Product, quantity = 1) => {
@@ -243,7 +273,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       removeFromCart,
       clearCart,
       signOut,
-      refreshFranchise: () => user && fetchFranchise(user.id)
+      refreshFranchise
     }}>
       {children}
     </AppContext.Provider>
