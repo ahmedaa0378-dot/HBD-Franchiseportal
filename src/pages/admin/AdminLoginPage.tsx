@@ -29,7 +29,7 @@ const AdminLoginPage = () => {
         .from('admin_users')
         .select('*')
         .eq('auth_user_id', authData.user.id)
-        .single();
+        .maybeSingle();
 
       if (adminError || !adminData) {
         await supabase.auth.signOut();
