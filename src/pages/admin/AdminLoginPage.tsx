@@ -1,47 +1,52 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useApp } from '../../context/AppContext';
 import Logo from '../../components/Logo';
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
+  const { user, isAdmin, adminChecked, loading: appLoading } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // If AppContext finishes its post-login check and the signed-in user
+  // is not an admin, sign them out and surface a clear error.
+  useEffect(() => {
+    if (appLoading || !adminChecked) return;
+    if (user && !isAdmin) {
+      setError('You are not authorized as an admin');
+      setSubmitting(false);
+      void supabase.auth.signOut();
+    }
+  }, [appLoading, adminChecked, user, isAdmin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError('');
 
     try {
-      // 1. Sign in
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
-      if (authError) throw authError;
+      if (signInError) throw signInError;
 
-      // 2. Check if user is admin
-const { data: adminData } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('auth_user_id', authData.user.id)
-        .maybeSingle();
-      if (!adminData) {
-        await supabase.auth.signOut();
-        throw new Error('You are not authorized as an admin');
-      }
-
+      // Single source of truth: AppContext checks admin_users on SIGNED_IN.
+      // AdminProtectedRoute holds a LoadingScreen until that completes,
+      // then either renders the dashboard or bounces non-admins back here.
       navigate('/admin/dashboard');
     } catch (err: any) {
       setError(err.message);
-    } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  const buttonLoading = submitting || (!!user && (appLoading || !adminChecked));
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-brand-black">
@@ -89,10 +94,10 @@ const { data: adminData } = await supabase
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={buttonLoading}
             className="w-full mt-8 bg-brand-black text-white py-4 rounded-lg font-semibold hover:bg-gray-800 transition disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {buttonLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
       </div>
