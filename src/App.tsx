@@ -1,251 +1,170 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import { supabase } from './lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useApp } from './context/AppContext';
+import DeliverySettingsPage from './pages/admin/DeliverySettingsPage';
+import PaymentSettingsPage from './pages/admin/PaymentSettingsPage';
+import BundlesPage from './pages/admin/BundlesPage';
+import AbandonedCartsPage from './pages/admin/AbandonedCartsPage';
+import PerformancePage from './pages/admin/PerformancePage';
+import AdminResourcesPage from './pages/admin/AdminResourcesPage';
+import ResourcesPage from './pages/ResourcesPage';
+import AdminReportsPage from './pages/admin/AdminReportsPage';
 
-// Types
-interface Franchise {
-  id: string;
-  auth_user_id: string;
-  franchise_name: string;
-  owner_name: string;
-  email: string;
-  phone: string;
-  site_location: string;
-  full_address: string;
-  city: string;
-  state: string;
-  pincode: string;
-  omc_partner: string;
-  status: 'pending' | 'approved' | 'rejected' | 'suspended';
-  rejection_reason?: string;
-  created_at: string;
-}
 
-interface Product {
-  id: string;
-  category_id: string;
-  name: string;
-  description: string;
-  sku: string;
-  price: number;
-  unit: string;
-  min_order_qty: number;
-  image_url: string;
-  stock_quantity: number;
-  reorder_threshold: number;
-  gst_rate: number;
-  hsn_code: string;
-  is_active: boolean;
-  categories?: { name: string };
-}
+// Franchise Pages
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import PendingApprovalPage from './pages/PendingApprovalPage';
+import CatalogPage from './pages/CatalogPage';
+import CartPage from './pages/CartPage';
+import OrdersPage from './pages/OrdersPage';
 
-interface CartItem {
-  product: Product;
-  quantity: number;
-}
+// Admin Pages
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import DashboardPage from './pages/admin/DashboardPage';
+import FranchisesPage from './pages/admin/FranchisesPage';
+import ProductsPage from './pages/admin/ProductsPage';
+import AdminOrdersPage from './pages/admin/OrdersPage';
+import InventoryPage from './pages/admin/InventoryPage';
 
-interface AppContextType {
-  user: User | null;
-  franchise: Franchise | null;
-  isAdmin: boolean;
-  adminChecked: boolean;
-  cart: CartItem[];
-  cartTotal: number;
-  cartCount: number;
-  loading: boolean;
-  addToCart: (product: Product, quantity?: number) => void;
-  updateCartQuantity: (productId: string, quantity: number) => void;
-  removeFromCart: (productId: string) => void;
-  clearCart: () => void;
-  signOut: () => Promise<void>;
-  refreshFranchise: () => void;
-}
+import Logo from './components/Logo';
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
+// Loading Component
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center bg-brand-cream">
+    <div className="text-center">
+      <div className="flex justify-center">
+        <Logo size="lg" />
+      </div>
+      <p className="mt-4 text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within AppProvider');
+// Protected Route for Franchise
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, franchise, loading } = useApp();
+
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!franchise) return <Navigate to="/login" replace />;
+  if (franchise.status === 'pending') return <PendingApprovalPage />;
+  if (franchise.status === 'rejected') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-brand-cream">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="font-display text-2xl font-semibold text-brand-black mb-2">Registration Rejected</h2>
+          <p className="text-gray-600 mb-4">Your franchise registration was not approved.</p>
+          {franchise.rejection_reason && (
+            <p className="text-sm text-gray-500 bg-gray-100 p-3 rounded-lg mb-4">
+              Reason: {franchise.rejection_reason}
+            </p>
+          )}
+        </div>
+      </div>
+    );
   }
-  return context;
+
+  return <>{children}</>;
 };
 
-export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [franchise, setFranchise] = useState<Franchise | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminChecked, setAdminChecked] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const initializedRef = useRef(false);
+// Public Route (redirect to catalog if logged in as franchise)
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, franchise, loading } = useApp();
 
-  useEffect(() => {
-    // Prevent double-init in React 18 StrictMode
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+  if (loading) return <LoadingScreen />;
+  if (user && franchise && franchise.status === 'approved') {
+    return <Navigate to="/catalog" replace />;
+  }
 
-    // Safety timeout — if loading is STILL true after 8 seconds, force it off.
-    // This catches any edge case where Supabase hangs, network fails, etc.
-    const timeout = setTimeout(() => {
-      setLoading(false);
-      setAdminChecked(true);
-    }, 8000);
+  return <>{children}</>;
+};
 
-    const initialize = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+// Protected Route for Admin
+const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAdmin, adminChecked, loading } = useApp();
 
-        if (error) {
-          console.error('getSession error:', error);
-          setLoading(false);
-          setAdminChecked(true);
-          return;
-        }
+  if (loading || !adminChecked) return <LoadingScreen />;
+  if (!user || !isAdmin) return <Navigate to="/admin/login" replace />;
+  return <>{children}</>;
+};
 
-        if (session?.user) {
-          setUser(session.user);
-          await Promise.all([
-            fetchFranchise(session.user.id),
-            checkAdmin(session.user.id),
-          ]);
-        } else {
-          setLoading(false);
-          setAdminChecked(true);
-        }
-      } catch (err) {
-        console.error('Auth initialization failed:', err);
-        setLoading(false);
-        setAdminChecked(true);
-      }
-    };
-
-    initialize();
-
-    // Listen for auth changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await Promise.all([
-            fetchFranchise(session.user.id),
-            checkAdmin(session.user.id),
-          ]);
-        } else {
-          setUser(null);
-          setFranchise(null);
-          setIsAdmin(false);
-          setAdminChecked(true);
-          setLoading(false);
-        }
-      }
-    );
-
-    return () => {
-      clearTimeout(timeout);
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const checkAdmin = async (authUserId: string) => {
-    try {
-      const { data: adminData } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('auth_user_id', authUserId)
-        .maybeSingle();
-      setIsAdmin(!!adminData);
-    } catch (err) {
-      console.error('checkAdmin error:', err);
-      setIsAdmin(false);
-    }
-    setAdminChecked(true);
-  };
-
-  const fetchFranchise = async (authUserId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('franchises')
-        .select('*')
-        .eq('auth_user_id', authUserId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('fetchFranchise error:', error);
-      }
-
-      setFranchise(data ?? null);
-    } catch (err) {
-      console.error('fetchFranchise failed:', err);
-      setFranchise(null);
-    }
-    setLoading(false);
-  };
-
-  const addToCart = (product: Product, quantity = 1) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      return [...prev, { product, quantity }];
-    });
-  };
-
-  const updateCartQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCart(prev =>
-      prev.map(item =>
-        item.product.id === productId
-          ? { ...item, quantity }
-          : item
-      )
-    );
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.product.id !== productId));
-  };
-
-  const clearCart = () => setCart([]);
-
-  const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setFranchise(null);
-    setCart([]);
-    setIsAdmin(false);
-    setAdminChecked(false);
-  };
-
+function App() {
   return (
-    <AppContext.Provider value={{
-      user,
-      franchise,
-      isAdmin,
-      adminChecked,
-      cart,
-      cartTotal,
-      cartCount,
-      loading,
-      addToCart,
-      updateCartQuantity,
-      removeFromCart,
-      clearCart,
-      signOut,
-      refreshFranchise: () => user && fetchFranchise(user.id)
-    }}>
-      {children}
-    </AppContext.Provider>
+    <BrowserRouter>
+      <Routes>
+        {/* ============ FRANCHISE ROUTES ============ */}
+        <Route path="/login" element={
+          <PublicRoute><LoginPage /></PublicRoute>
+        } />
+        <Route path="/register" element={
+          <PublicRoute><RegisterPage /></PublicRoute>
+        } />
+        <Route path="/catalog" element={
+          <ProtectedRoute><CatalogPage /></ProtectedRoute>
+        } />
+        <Route path="/cart" element={
+          <ProtectedRoute><CartPage /></ProtectedRoute>
+        } />
+        <Route path="/orders" element={
+          <ProtectedRoute><OrdersPage /></ProtectedRoute>
+        } />
+        <Route path="/resources" element={
+          <ProtectedRoute><ResourcesPage /></ProtectedRoute>
+        } />
+
+        {/* ============ ADMIN ROUTES ============ */}
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/dashboard" element={
+          <AdminProtectedRoute><DashboardPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/franchises" element={
+          <AdminProtectedRoute><FranchisesPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/products" element={
+          <AdminProtectedRoute><ProductsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/orders" element={
+          <AdminProtectedRoute><AdminOrdersPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/inventory" element={
+          <AdminProtectedRoute><InventoryPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/delivery-settings" element={
+          <AdminProtectedRoute><DeliverySettingsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/payment-settings" element={
+          <AdminProtectedRoute><PaymentSettingsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/bundles" element={
+          <AdminProtectedRoute><BundlesPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/abandoned-carts" element={
+          <AdminProtectedRoute><AbandonedCartsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/performance" element={
+          <AdminProtectedRoute><PerformancePage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/resources" element={
+          <AdminProtectedRoute><AdminResourcesPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/reports" element={
+          <AdminProtectedRoute><AdminReportsPage /></AdminProtectedRoute>
+        } />
+
+
+
+        {/* ============ DEFAULT REDIRECTS ============ */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
-};
+}
+
+export default App;
