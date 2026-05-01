@@ -14,14 +14,17 @@ const AdminLoginPage = () => {
 
   // If AppContext finishes its post-login check and the signed-in user
   // is not an admin, sign them out and surface a clear error.
-  useEffect(() => {
+useEffect(() => {
+    if (!submitting) return;
     if (appLoading || !adminChecked) return;
-    if (user && !isAdmin) {
+    if (user && isAdmin) {
+      navigate('/admin/dashboard');
+    } else if (user && !isAdmin) {
       setError('You are not authorized as an admin');
       setSubmitting(false);
       void supabase.auth.signOut();
     }
-  }, [appLoading, adminChecked, user, isAdmin]);
+  }, [submitting, appLoading, adminChecked, user, isAdmin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
