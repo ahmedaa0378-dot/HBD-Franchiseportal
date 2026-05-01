@@ -79,12 +79,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const initialSessionFetchedRef = useRef(false);
+  // Tracks the previously-seen authenticated user id so onAuthStateChange
+  // can distinguish a real user transition (sign-in / user switch) from
+  // events that fire for the SAME user (TOKEN_REFRESHED, USER_UPDATED, or
+  // signInWithPassword while a persisted session is already in localStorage).
+  const prevUserIdRef = useRef<string | null>(null);
 
   // Auth subscription. The onAuthStateChange callback MUST stay synchronous —
   // Supabase v2 holds an internal lock while dispatching SIGNED_IN/SIGNED_OUT,
   // and any awaited supabase call inside (including .from() table queries,
   // which read the JWT via getSession()) deadlocks signInWithPassword forever.
-  // We only update `user` here; a separate effect on user.id does the fetching.
+  // We only update React state here; a separate effect on user.id does the fetching.
   useEffect(() => {
     let mounted = true;
 
@@ -115,24 +120,36 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         });
     }
 
-const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       const nextUser = session?.user ?? null;
+      const nextUserId = nextUser?.id ?? null;
+      const prevUserId = prevUserIdRef.current;
+
       setUser(nextUser);
+
       if (!nextUser) {
+        // Sign-out: reset everything.
+        prevUserIdRef.current = null;
         setFranchise(null);
         setIsAdmin(false);
         setAdminChecked(true);
         setLoading(false);
-      } else {
-        // CRITICAL: Mark the post-login fetch as in-flight SYNCHRONOUSLY
-        // so AdminLoginPage / LoginPage / ProtectedRoute don't read a stale
-        // (loading=false, adminChecked=true, franchise=null, isAdmin=false)
-        // state in the gap before the [user?.id] effect starts the fetch.
-        // These are pure React state updates — no Supabase calls, no deadlock.
+      } else if (prevUserId !== nextUserId) {
+        // Real user transition (first sign-in or user switch). Mark the
+        // post-login fetch as in-flight SYNCHRONOUSLY so AdminLoginPage /
+        // LoginPage / ProtectedRoute don't read a stale (loading=false,
+        // adminChecked=true) state in the gap before the [user?.id]
+        // effect starts the fetch. Pure state updates — no Supabase
+        // calls, no deadlock risk.
+        prevUserIdRef.current = nextUserId;
         setLoading(true);
         setAdminChecked(false);
       }
+      // else: SAME user (TOKEN_REFRESHED, USER_UPDATED, or signInWithPassword
+      // while a session for this user is already in localStorage). The
+      // [user?.id] effect won't refire, so flipping loading/adminChecked
+      // here would strand the UI in a permanent loading state. Do nothing.
     });
 
     return () => {
@@ -258,11 +275,12 @@ const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    prevUserIdRef.current = null;
     setUser(null);
     setFranchise(null);
     setCart([]);
     setIsAdmin(false);
-    setAdminChecked(false);
+    setAdminChecked(true);
   };
 
   return (
