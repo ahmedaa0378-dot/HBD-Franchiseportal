@@ -1,49 +1,54 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 import Logo from '../components/Logo';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { user, franchise, loading: appLoading } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-const handleSubmit = async (e: React.FormEvent) => {
+  // If AppContext finishes its post-login fetch and we have a session
+  // but no franchise record, the user signed in with non-franchise credentials
+  // (e.g. admin). Sign out and surface a clear error instead of silently
+  // bouncing them back to the login form.
+  useEffect(() => {
+    if (appLoading) return;
+    if (user && !franchise) {
+      setError('No franchise account found for this email. If you are an admin, please use the admin login.');
+      setSubmitting(false);
+      void supabase.auth.signOut();
+    }
+  }, [appLoading, user, franchise]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
-      if (error) throw error;
+      if (signInError) throw signInError;
 
-      // Check if this user has a franchise account
-      const { data: franchiseData } = await supabase
-        .from('franchises')
-        .select('id, status')
-        .eq('auth_user_id', data.user.id)
-        .maybeSingle();
-
-      if (!franchiseData) {
-        setError('No franchise account found for this email. If you are an admin, please use the admin login.');
-        await supabase.auth.signOut();
-        setLoading(false);
-        return;
-      }
-
+      // Single source of truth: AppContext fetches the franchise record on
+      // the SIGNED_IN event. ProtectedRoute will hold a LoadingScreen until
+      // that finishes, then route based on franchise.status.
       navigate('/catalog');
     } catch (err: any) {
       setError(err.message);
-    } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  const buttonLoading = submitting || (!!user && appLoading);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-brand-cream">
@@ -91,10 +96,10 @@ const handleSubmit = async (e: React.FormEvent) => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={buttonLoading}
             className="w-full mt-8 bg-brand-black text-white py-4 rounded-lg font-semibold hover:bg-gray-800 transition disabled:opacity-50"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {buttonLoading ? 'Logging in...' : 'Login'}
           </button>
 
           <p className="text-center mt-6 text-gray-600">
