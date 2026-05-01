@@ -25,13 +25,12 @@ const AdminLoginPage = () => {
       if (authError) throw authError;
 
       // 2. Check if user is admin
-      const { data: adminData, error: adminError } = await supabase
+const { data: adminData } = await supabase
         .from('admin_users')
         .select('*')
         .eq('auth_user_id', authData.user.id)
         .maybeSingle();
-
-      if (adminError || !adminData) {
+      if (!adminData) {
         await supabase.auth.signOut();
         throw new Error('You are not authorized as an admin');
       }
