@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { User } from '@supabase/supabase-js';
 
@@ -78,29 +78,59 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [adminChecked, setAdminChecked] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchFranchise(session.user.id);
-        checkAdmin(session.user.id);
-      } else {
+    // Prevent double-init in React 18 StrictMode
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    // Safety timeout — if loading is STILL true after 8 seconds, force it off.
+    // This catches any edge case where Supabase hangs, network fails, etc.
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      setAdminChecked(true);
+    }, 8000);
+
+    const initialize = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('getSession error:', error);
+          setLoading(false);
+          setAdminChecked(true);
+          return;
+        }
+
+        if (session?.user) {
+          setUser(session.user);
+          await Promise.all([
+            fetchFranchise(session.user.id),
+            checkAdmin(session.user.id),
+          ]);
+        } else {
+          setLoading(false);
+          setAdminChecked(true);
+        }
+      } catch (err) {
+        console.error('Auth initialization failed:', err);
         setLoading(false);
         setAdminChecked(true);
       }
-    });
+    };
 
-    // Listen for auth changes
+    initialize();
+
+    // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
           setUser(session.user);
-          if (!franchise) {
-            await fetchFranchise(session.user.id);
-          }
-          await checkAdmin(session.user.id);
+          await Promise.all([
+            fetchFranchise(session.user.id),
+            checkAdmin(session.user.id),
+          ]);
         } else {
           setUser(null);
           setFranchise(null);
@@ -111,33 +141,42 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const checkAdmin = async (authUserId: string) => {
-    const { data: adminData } = await supabase
-      .from('admin_users')
-      .select('id')
-      .eq('auth_user_id', authUserId)
-      .maybeSingle();
-    setIsAdmin(!!adminData);
+    try {
+      const { data: adminData } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('auth_user_id', authUserId)
+        .maybeSingle();
+      setIsAdmin(!!adminData);
+    } catch (err) {
+      console.error('checkAdmin error:', err);
+      setIsAdmin(false);
+    }
     setAdminChecked(true);
   };
 
   const fetchFranchise = async (authUserId: string) => {
-    const { data, error } = await supabase
-      .from('franchises')
-      .select('*')
-      .eq('auth_user_id', authUserId)
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from('franchises')
+        .select('*')
+        .eq('auth_user_id', authUserId)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Failed to load franchise:', error);
-    }
+      if (error) {
+        console.error('fetchFranchise error:', error);
+      }
 
-    if (data) {
-      setFranchise(data);
-    } else {
+      setFranchise(data ?? null);
+    } catch (err) {
+      console.error('fetchFranchise failed:', err);
       setFranchise(null);
     }
     setLoading(false);
@@ -147,8 +186,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setCart(prev => {
       const existing = prev.find(item => item.product.id === product.id);
       if (existing) {
-        return prev.map(item => 
-          item.product.id === product.id 
+        return prev.map(item =>
+          item.product.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
@@ -162,9 +201,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       removeFromCart(productId);
       return;
     }
-    setCart(prev => 
-      prev.map(item => 
-        item.product.id === productId 
+    setCart(prev =>
+      prev.map(item =>
+        item.product.id === productId
           ? { ...item, quantity }
           : item
       )
