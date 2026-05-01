@@ -8,6 +8,7 @@ import PerformancePage from './pages/admin/PerformancePage';
 import AdminResourcesPage from './pages/admin/AdminResourcesPage';
 import ResourcesPage from './pages/ResourcesPage';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
+import CompanySettingsPage from './pages/admin/CompanySettingsPage';
 
 
 // Franchise Pages
@@ -154,6 +155,9 @@ function App() {
         } />
         <Route path="/admin/reports" element={
           <AdminProtectedRoute><AdminReportsPage /></AdminProtectedRoute>
+        } />
+        <Route path="/admin/company-settings" element={
+          <AdminProtectedRoute><CompanySettingsPage /></AdminProtectedRoute>
         } />
 
 
