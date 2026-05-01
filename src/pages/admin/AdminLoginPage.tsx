@@ -26,29 +26,22 @@ useEffect(() => {
     }
   }, [submitting, appLoading, adminChecked, user, isAdmin]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
-
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
       if (signInError) throw signInError;
-
-      // Single source of truth: AppContext checks admin_users on SIGNED_IN.
-      // AdminProtectedRoute holds a LoadingScreen until that completes,
-      // then either renders the dashboard or bounces non-admins back here.
-      navigate('/admin/dashboard');
+      // useEffect above handles navigation once AppContext confirms admin
     } catch (err: any) {
       setError(err.message);
       setSubmitting(false);
     }
   };
-
   const buttonLoading = submitting || (!!user && (appLoading || !adminChecked));
 
   return (
