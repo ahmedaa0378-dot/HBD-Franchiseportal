@@ -115,7 +115,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         });
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       const nextUser = session?.user ?? null;
       setUser(nextUser);
@@ -124,8 +124,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setIsAdmin(false);
         setAdminChecked(true);
         setLoading(false);
+      } else {
+        // CRITICAL: Mark the post-login fetch as in-flight SYNCHRONOUSLY
+        // so AdminLoginPage / LoginPage / ProtectedRoute don't read a stale
+        // (loading=false, adminChecked=true, franchise=null, isAdmin=false)
+        // state in the gap before the [user?.id] effect starts the fetch.
+        // These are pure React state updates — no Supabase calls, no deadlock.
+        setLoading(true);
+        setAdminChecked(false);
       }
-      // If nextUser is set, the [user?.id] effect below handles the fetching.
     });
 
     return () => {
