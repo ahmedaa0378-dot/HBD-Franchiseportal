@@ -166,15 +166,31 @@ const OrdersPage = () => {
                         </div>
                       )}
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        generateInvoice(order as any, franchise as any);
-                      }}
-                      className="w-full mt-3 flex items-center justify-center gap-2 py-2 bg-brand-gold text-brand-black rounded-lg text-sm font-medium hover:bg-brand-gold-light transition"
-                    >
-                      📄 Download Invoice
-                    </button>
+<div className="flex gap-2 mt-3">
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const { generatePO } = await import('../lib/generatePO');
+                          await generatePO(order as any, franchise as any);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-brand-gold text-brand-black rounded-lg text-sm font-medium hover:bg-brand-gold-light transition"
+                      >
+                        📋 Download PO
+                      </button>
+
+                      {order.status === 'delivered' && (
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const { generateInvoice } = await import('../lib/generateInvoice');
+                            await generateInvoice(order as any, franchise as any);
+                          }}
+                          className="flex-1 flex items-center justify-center gap-2 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition"
+                        >
+                          📄 Download Invoice
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
