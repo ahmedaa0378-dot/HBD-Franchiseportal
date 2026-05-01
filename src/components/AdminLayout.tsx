@@ -60,6 +60,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: '/admin/performance', label: 'Performance', icon: '📈' },
     { path: '/admin/reports', label: 'Reports', icon: '📋' },
     { path: '/admin/resources', label: 'Resources', icon: '📚' },
+    { path: '/admin/company-settings', label: 'Company Info', icon: '🏢' },
   ];
 
   // ─── Settings Group ────────────────────────────────────────
