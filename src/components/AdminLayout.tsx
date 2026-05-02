@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 import Logo from './Logo';
 import NotificationBell from './NotificationBell';
 import { ChevronDown, ChevronRight, LogOut, Menu, X } from 'lucide-react';
@@ -24,17 +25,10 @@ interface NavGroup {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [adminUserId, setAdminUserId] = useState<string>('');
+  const { user } = useApp();
+  const adminUserId = user?.id ?? '';
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setAdminUserId(user.id);
-    };
-    getUser();
-  }, []);
 
   // Auto-expand settings if current page is a settings sub-item
   useEffect(() => {
