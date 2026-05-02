@@ -72,6 +72,8 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  console.log('[AppContext] mounted — fix v2 with prevUserIdRef');
+
   const [user, setUser] = useState<User | null>(null);
   const [franchise, setFranchise] = useState<Franchise | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -105,9 +107,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
           if (session?.user) {
+            console.log('[getSession] restored session for', session.user.id);
             setUser(session.user);
             // user-effect below picks this up and fetches franchise + admin
           } else {
+            console.log('[getSession] no session');
             setLoading(false);
             setAdminChecked(true);
           }
@@ -125,6 +129,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const nextUser = session?.user ?? null;
       const nextUserId = nextUser?.id ?? null;
       const prevUserId = prevUserIdRef.current;
+      console.log('[AUTH EVENT]', _event, 'nextUserId:', nextUserId, 'prevUserId:', prevUserId, 'transition:', prevUserId !== nextUserId);
 
       setUser(nextUser);
 
@@ -164,6 +169,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     let cancelled = false;
     const authUserId = user.id;
+    console.log('[user-effect] fired for', authUserId);
 
     setLoading(true);
     setAdminChecked(false);
@@ -211,6 +217,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       .finally(() => {
         clearTimeout(safetyTimeout);
         if (cancelled) return;
+        console.log('[user-effect] fetch complete — franchise + admin checks done');
         setLoading(false);
         setAdminChecked(true);
       });
